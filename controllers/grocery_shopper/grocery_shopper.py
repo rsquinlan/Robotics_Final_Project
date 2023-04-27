@@ -122,8 +122,7 @@ if mode == 'planner':
     plt.imshow(config_space)
     
     def state_is_valid(point):
-        print(point)
-        return config_space[int(point[0]), int(point[1])] == 0
+        return config_space[int(point[1]), int(point[0])] == 0
             
     class Node:
         """
@@ -195,7 +194,7 @@ if mode == 'planner':
             path = steer(q_near.point, q_rand, delta_q)
     
             q_new = path[-1] # next point is final point in path (differs from q_rand if scaling is done)
-    
+            print(q_near.point, q_rand)
             # create new node if the path is valid
             if check_path_valid(path, state_is_valid):
                 new_node = Node(q_new, q_near)
@@ -209,11 +208,11 @@ if mode == 'planner':
     
     
         return node_list
-    
-    bounds = np.array([[0,900],[0,480]])
+    print (config_space.shape)
+    bounds = np.array([[0,479],[0,899]])
     start = [251, 585]
     
-    nodes = rrt(bounds, start, None, 100, 50)
+    nodes = rrt(bounds, start, None, 500, 50)
     
     waypoints = [node.point for node in nodes]
     paths = [node.path_from_parent for node in nodes]
@@ -222,8 +221,9 @@ if mode == 'planner':
         for point in path:
             path_points.append([point[0], point[1]])
     
-    plt.scatter([i[0] for i in waypoints], [i[1] for i in waypoints], c='red')
     plt.scatter([i[0] for i in path_points], [i[1] for i in path_points], c='blue')
+    plt.scatter([i[0] for i in waypoints], [i[1] for i in waypoints], c='red')
+    
     
     plt.show()
     
