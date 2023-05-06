@@ -244,8 +244,8 @@ while robot.step(timestep) != -1:
     pose_y = gps.getValues()[1]
     
     n = compass.getValues()
-    rad = -((math.atan2(n[0], n[1]))-1.5708)
-    pose_theta = rad
+    rad = math.atan2(n[0], n[1])
+    pose_theta = -rad
     
     
     ###################
@@ -365,20 +365,19 @@ while robot.step(timestep) != -1:
     if mode == "autonomous":
         waypoints = [[-4, 2]]
         state = 0
+        
         rho = math.sqrt(math.pow(pose_x - waypoints[state][0],2) + math.pow(pose_y-waypoints[state][1],2))
         alpha = (math.atan2(pose_y - waypoints[state][1], pose_x - waypoints[state][0]) - pose_theta)
 
+        print(alpha)
+        
         # can adjust gains
         d_x = rho 
         d_theta = 10 * alpha
         
-        print(d_x, d_theta)
-        
         # Compute wheelspeeds
         vL = (d_x - (d_theta * AXLE_LENGTH*0.5))
         vR = (d_x + (d_theta * AXLE_LENGTH*0.5))
-        
-        
         
         ratio = abs(vL/vR)
         if (ratio > 1):
@@ -387,8 +386,6 @@ while robot.step(timestep) != -1:
         else:
             vL = math.copysign(MAX_SPEED*ratio, vL)
             vR = math.copysign(MAX_SPEED, vR)
-            
-        
             
         # STEP 2.4: Clamp wheel speeds
         if(vR > MAX_SPEED):
@@ -400,19 +397,24 @@ while robot.step(timestep) != -1:
             vR = -MAX_SPEED
         if(vL < -MAX_SPEED):
             vL = -MAX_SPEED
-                
+  
         # reduce jerk
-        vR = vR
-        vL = vL
+        vR = vR/4
+        vL = vL/4
         
-        print(ratio, vL, vR)
-        
+        if alpha < .01 and alpha > -.01:
+            # go straight if bearing is close
+            vL = MAX_SPEED/4
+            vR = MAX_SPEED/4
+            
         if rho < .1: # if within dist of waypoint
             print("Waypoint Reached")
-            
         
     robot_parts["wheel_left_joint"].setVelocity(vL)
     robot_parts["wheel_right_joint"].setVelocity(vR)
+    
+    print(robot_parts["wheel_left_joint"].getVelocity(), robot_parts["wheel_right_joint"].getVelocity())
+    
     
     if(gripper_status=="open"):
         # Close gripper, note that this takes multiple time steps...
