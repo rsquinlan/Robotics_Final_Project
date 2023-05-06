@@ -88,7 +88,7 @@ lidar_offsets = np.linspace(-LIDAR_ANGLE_RANGE/2., +LIDAR_ANGLE_RANGE/2., LIDAR_
 lidar_offsets = lidar_offsets[83:len(lidar_offsets)-83] # Only keep lidar readings not blocked by robot chassis
 
 map = np.zeros(shape=[900,480])
-mode = 'autonomous'
+mode = 'camera'
 
 
 
@@ -255,15 +255,19 @@ while robot.step(timestep) != -1:
         img = camera.getImageArray()
         img = np.asarray(img, dtype=np.uint8)
         
+        img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+        #img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+        img =  cv2.flip(img, 1)
+        
         cv2.imshow("Image", img)
         cv2.waitKey(0)
         
     if mode == 'camera':
         img = np.asarray(camera.getImageArray(), dtype=np.uint8) # get image and convert to numpy
         
-        hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV) # convert from BGR to HSV
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) # convert from BGR to HSV
         
-        mask = cv2.inRange(hsv, np.array([10, 150, 150]), np.array([50, 255, 255])) # mask for yellow
+        mask = cv2.inRange(hsv, np.array([0, 0, 0]), np.array([30, 255, 255])) # mask for yellow
         cv2.imshow("Mask", mask)
         cv2.waitKey(0)
         
